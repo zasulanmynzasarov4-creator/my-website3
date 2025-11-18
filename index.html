@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="kk">
+ <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Кері байланыс</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <style>
+    /* Inline minimal fallback styles are already embedded in HTML below; styles.css optional */
+  </style>
+  <script src="./_sdk/data_sdk.js"></script>
+  <script src="./_sdk/element_sdk.js"></script>
+  
+ </head>
+ <body>
+  <!-- The main HTML content was taken from the user's snippet and adapted to work with local SDKs -->
+  <div class="container">
+   <div class="header">
+    <h1 id="main-title">🎓 Кері байланыс 🎓</h1>
+    <p id="main-subtitle">Заманауи кері байланыс жүйесі</p>
+   </div>
+   <div class="mode-selector"><button class="mode-btn active" data-mode="teacher">👨‍🏫 Мұғалім</button> <button class="mode-btn" data-mode="student">👨‍🎓 Оқушы</button>
+   </div>
+   <div id="teacher-screen" class="screen active">
+    <div id="teacher-create" style="display: block;">
+     <div class="form-card">
+      <h2 style="color: #667eea; text-align: center; margin-bottom: 25px;" id="teacher-title">Сессия құру</h2>
+      <form id="teacher-form">
+       <div class="form-group"><label for="topic" id="topic-label">Сабақ тақырыбы:</label> <input type="text" id="topic" required placeholder="Мысалы: Ақпаратты кодтау"></div>
+       <div class="form-group"><label for="teacher-email" id="email-label">Мұғалімнің email-і:</label> <input type="email" id="teacher-email" required placeholder="mugalim@mektep.kz"></div>
+       <button type="submit" class="submit-btn" id="create-btn">Сессия құру және QR-код алу 🎯</button>
+      </form>
+     </div>
+    </div>
+    <div id="teacher-display" style="display: none;">
+     <div class="qr-display">
+      <h2>Оқушыларға арналған QR-код 📱</h2>
+  <div class="qr-code-container" id="qr-code-container"></div>
+  <!-- Дополнительный контейнер для простого QR с текущим URL -->
+  <div id="qrcode" style="margin-top:12px;"></div>
+      <p style="color: #667eea; font-weight: 600; margin-top: 15px;">Телефон камерасымен сканерлеңіз</p>
+      <div class="session-info">
+       <p><strong>Тақырып:</strong> <span id="display-topic"></span></p>
+       <p><strong>Email:</strong> <span id="display-email"></span></p>
+      </div>
+      <div class="link-share">
+       <p style="margin-bottom: 10px; font-weight: 600; color: #667eea;">Немесе сілтемемен бөлісіңіз:</p><input type="text" id="share-link" readonly> <button class="copy-btn" id="copy-link-btn">📋 Сілтемені көшіру</button>
+      </div><button class="submit-btn" style="margin-top: 20px;" id="reset-session">Жаңа сессия құру</button>
+  <div style="margin-top:12px; display:flex; gap:8px; align-items:center; justify-content:center; flex-wrap:wrap;">
+    <input id="base-url" placeholder="Авто анықтау: немесе мұнда локал IP енгізіңіз (мысалы http://192.168.1.5:8000)" style="padding:10px;border-radius:8px;border:2px solid #e0e0e0;width:420px;max-width:100%;" />
+    <button class="copy-btn" id="detect-url">🔍 Анықтау</button>
+  </div>
+  <button class="submit-btn" id="send-report" style="margin-top:12px;background:#4caf50">📧 Пікірлерді поштамен жіберу</button>
+     </div>
+     <div id="feedback-container">
+      <h2 style="color: white; text-align: center; margin: 30px 0; font-size: 32px;">📊 Оқушылардың пікірлері</h2>
+      <div id="feedback-display" class="feedback-display"></div>
+    <h3 style="color:white; text-align:center; margin-top:20px;">Барлық пікірлер (жазбалар)</h3>
+    <div id="all-feedbacks" style="background:rgba(255,255,255,0.05); padding:15px; border-radius:12px; margin-top:12px; color:white; max-height:300px; overflow:auto; font-size:14px;"></div>
+      <div id="empty-feedback" class="empty-state">Әзірше пікірлер жоқ. QR-кодты оқушыларға көрсетіңіз! 🌟</div>
+     </div>
+    </div>
+   </div>
+   <div id="student-screen" class="screen">
+    <div class="form-card">
+     <h2 style="color: #667eea; text-align: center; margin-bottom: 25px;" id="student-title">Сабақ туралы пікір қалдыру</h2>
+     <div id="student-session-info" class="session-info" style="display: none;"><p><strong>Сабақ тақырыбы:</strong> <span id="student-topic"></span></p></div>
+     <form id="student-form">
+      <div class="form-group"><label for="student-name" id="name-label">Сіздің атыңыз:</label> <input type="text" id="student-name" required placeholder="Атыңызды жазыңыз"></div>
+      <div class="form-group"><label for="student-feedback" id="feedback-label">Сіздің пікіріңіз:</label> <textarea id="student-feedback" required placeholder="Не ұнады? Нені жақсартуға болады?"></textarea></div>
+      <button type="submit" class="submit-btn" id="send-btn">Пікір жіберу 🚀</button>
+     </form>
+    </div>
+   </div>
+  </div>
+
+  <script>
+    // App logic (same as previous, but uses local SDK)
+    const defaultConfig = { teacher_title: 'Сессия құру', student_title: 'Сабақ туралы пікір қалдыру', topic_label: 'Сабақ тақырыбы:', email_label: 'Мұғалімнің email-і:', name_label: 'Сіздің атыңыз:', feedback_label: 'Сіздің пікіріңіз:', button_create: 'Сессия құру және QR-код алу 🎯', button_send: 'Пікір жіберу 🚀', background_color: '#667eea', card_color: '#ffffff', text_color: '#333333', primary_action_color: '#667eea', accent_color: '#764ba2', font_family: 'Comic Sans MS', font_size: 16 };
+    const animals = [{ type: 'cat', color: '#FF6B6B' },{ type: 'dog', color: '#4ECDC4' },{ type: 'fox', color: '#FF8C42' },{ type: 'bear', color: '#8B4513' },{ type: 'rabbit', color: '#FFB6C1' },{ type: 'owl', color: '#9B59B6' },{ type: 'panda', color: '#2C3E50' },{ type: 'koala', color: '#95A5A6' }];
+    let currentSession = null; let allData = []; let isSubmitting = false;
+    const dataHandler = { onDataChanged(data) { allData = data || []; const sessions = allData.filter(item => item.is_session); if (sessions.length > 0) { currentSession = sessions[sessions.length - 1]; } updateDisplay(); updateStudentSessionInfo(); } };
+    async function init() { const initResult = await window.dataSdk.init(dataHandler); if (!initResult.isOk) showToast('Қате орын алды', true); bindUI(); checkURLParams(); }
+    function bindUI() {
+      document.querySelectorAll('.mode-btn').forEach(btn => { btn.addEventListener('click', (e) => switchMode(btn.dataset.mode, e)); });
+      document.getElementById('teacher-form').addEventListener('submit', async (e) => { e.preventDefault(); if (isSubmitting) return; const topic = document.getElementById('topic').value.trim(); const email = document.getElementById('teacher-email').value.trim(); if (!topic || !email) return; isSubmitting = true; const createBtn = document.getElementById('create-btn'); createBtn.disabled = true; createBtn.textContent = 'Құрылуда...'; const sessionId = 'session_' + Date.now(); const sessionData = { session_id: sessionId, teacher_email: email, topic: topic, is_session: true, timestamp: new Date().toISOString(), student_name: '', feedback: '', animal_type: '' }; const result = await window.dataSdk.create(sessionData); if (result.isOk) { currentSession = sessionData; showTeacherDisplay(); showToast('Сессия құрылды! 🎉'); } else { showToast('Сессия құру қатесі', true); createBtn.disabled = false; createBtn.textContent = defaultConfig.button_create; } isSubmitting = false; });
+      document.getElementById('student-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (isSubmitting) return;
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionId = urlParams.get('session');
+        if (!sessionId) { showToast('Алдымен мұғалімнің QR-кодын сканерлеңіз!', true); return; }
+        const studentName = document.getElementById('student-name').value.trim();
+        const feedback = document.getElementById('student-feedback').value.trim();
+        if (!studentName || !feedback) return;
+        isSubmitting = true;
+        const sendBtn = document.getElementById('send-btn');
+        sendBtn.disabled = true;
+        sendBtn.textContent = 'Жіберілуде...';
+
+        const randomAnimal = animals[Math.floor(Math.random() * animals.length)];
+        const feedbackData = {
+          session_id: sessionId,
+          student_name: studentName,
+          feedback: feedback,
+          animal_type: randomAnimal.type,
+          timestamp: new Date().toISOString(),
+          is_session: false,
+          teacher_email: '',
+          topic: ''
+        };
+
+        // Save locally first
+        const result = await window.dataSdk.create(feedbackData);
+
+        if (result.isOk) {
+          // also send to FormSubmit: create a hidden form and submit to formsubmit.co/<teacher_email>
+          const session = allData.find(item => item.is_session && item.session_id === sessionId);
+          const teacherEmail = session ? session.teacher_email : '';
+
+          // create and submit hidden form to FormSubmit in a new tab so student remains on page
+          if (teacherEmail) {
+            const hiddenForm = document.createElement('form');
+            hiddenForm.style.display = 'none';
+            hiddenForm.method = 'POST';
+            hiddenForm.action = 'https://formsubmit.co/' + encodeURIComponent(teacherEmail);
+            hiddenForm.target = '_blank';
+
+            const inName = document.createElement('input'); inName.name = 'name'; inName.value = studentName; hiddenForm.appendChild(inName);
+            const inMsg = document.createElement('textarea'); inMsg.name = 'message'; inMsg.value = feedback; hiddenForm.appendChild(inMsg);
+            const inCaptcha = document.createElement('input'); inCaptcha.type = 'hidden'; inCaptcha.name = '_captcha'; inCaptcha.value = 'false'; hiddenForm.appendChild(inCaptcha);
+            const inTpl = document.createElement('input'); inTpl.type = 'hidden'; inTpl.name = '_template'; inTpl.value = 'box'; hiddenForm.appendChild(inTpl);
+
+            document.body.appendChild(hiddenForm);
+            hiddenForm.submit();
+            hiddenForm.remove();
+          }
+
+          document.getElementById('student-name').value = '';
+          document.getElementById('student-feedback').value = '';
+          showToast('Пікіріңіз үшін рахмет! 🎉');
+        } else {
+          showToast('Жіберу қатесі', true);
+        }
+
+        sendBtn.disabled = false;
+        sendBtn.textContent = defaultConfig.button_send;
+        isSubmitting = false;
+      });
+      document.getElementById('copy-link-btn').addEventListener('click', copyLink);
+      document.getElementById('reset-session').addEventListener('click', resetSession);
+      document.getElementById('send-report').addEventListener('click', sendReport);
+      document.getElementById('detect-url').addEventListener('click', detectAndFillLocalUrl);
+    }
+    function checkURLParams() { const urlParams = new URLSearchParams(window.location.search); const sessionId = urlParams.get('session'); if (sessionId) { document.querySelector('.mode-selector').style.display = 'none'; document.getElementById('teacher-screen').classList.remove('active'); document.getElementById('student-screen').classList.add('active'); updateStudentSessionInfo(); } }
+    function updateStudentSessionInfo() { const urlParams = new URLSearchParams(window.location.search); const sessionId = urlParams.get('session'); if (sessionId) { const session = allData.find(item => item.is_session && item.session_id === sessionId); if (session) { document.getElementById('student-session-info').style.display = 'block'; document.getElementById('student-topic').textContent = session.topic; } } }
+    function switchMode(mode, event) { document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active')); if (event && event.currentTarget) event.currentTarget.classList.add('active'); document.getElementById('teacher-screen').classList.remove('active'); document.getElementById('student-screen').classList.remove('active'); if (mode === 'teacher') document.getElementById('teacher-screen').classList.add('active'); else document.getElementById('student-screen').classList.add('active'); }
+    function getBaseUrl(){
+      const field = document.getElementById('base-url');
+      const val = field && field.value && field.value.trim();
+      if(val) return val.replace(/\/$/, '');
+      // fallback to window.location.origin
+      return window.location.origin;
+    }
+
+    function showTeacherDisplay() {
+      document.getElementById('teacher-create').style.display = 'none';
+      document.getElementById('teacher-display').style.display = 'block';
+      document.getElementById('display-topic').textContent = currentSession.topic;
+      document.getElementById('display-email').textContent = currentSession.teacher_email;
+      const base = getBaseUrl();
+      const studentUrl = base + window.location.pathname + '?session=' + currentSession.session_id;
+      document.getElementById('share-link').value = studentUrl;
+      generateQRCode(studentUrl);
+      // also update the simple QR (#qrcode) so scanning it opens the session link
+      updateSimpleQRCode(studentUrl);
+      updateDisplay();
+    }
+    function generateQRCode(url) { const container = document.getElementById('qr-code-container'); container.innerHTML = ''; new QRCode(container, { text: url, width: 300, height: 300, colorDark: '#667eea', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.H }); }
+    function resetSession() { currentSession = null; document.getElementById('teacher-create').style.display = 'block'; document.getElementById('teacher-display').style.display = 'none'; document.getElementById('topic').value = ''; document.getElementById('teacher-email').value = ''; document.getElementById('create-btn').disabled = false; document.getElementById('create-btn').textContent = defaultConfig.button_create; }
+    function copyLink() { const linkInput = document.getElementById('share-link'); navigator.clipboard.writeText(linkInput.value).then(() => showToast('Сілтеме көшірілді! 📋')).catch(() => showToast('Көшіру қатесі', true)); }
+    function updateDisplay() { if (!currentSession) return; const feedbacks = allData.filter(item => !item.is_session && item.session_id === currentSession.session_id); const feedbackDisplay = document.getElementById('feedback-display'); const emptyState = document.getElementById('empty-feedback'); if (feedbacks.length === 0) { feedbackDisplay.innerHTML = ''; emptyState.style.display = 'block'; return; } emptyState.style.display = 'none'; feedbackDisplay.innerHTML = ''; feedbacks.forEach(feedback => feedbackDisplay.appendChild(createFeedbackCard(feedback))); }
+
+    // show all feedbacks (across sessions) in a simple table-like output
+    function renderAllFeedbacks(){
+      const all = allData.filter(item => !item.is_session).slice().reverse();
+      const container = document.getElementById('all-feedbacks');
+      if(!container) return;
+      if(all.length === 0){ container.innerHTML = '<div style="opacity:0.8">Пікірлер жоқ</div>'; return; }
+      // create simple table-like ASCII/CSV view
+      const rows = all.map(f => {
+        const ts = new Date(f.timestamp).toLocaleString();
+        return `<div style="padding:6px 8px; border-bottom:1px solid rgba(255,255,255,0.06)"><strong>${escapeHtml(f.student_name)}</strong> — <span style="opacity:0.9">${escapeHtml(f.feedback)}</span><div style="font-size:11px; color:rgba(255,255,255,0.7); margin-top:6px">Сессия: ${escapeHtml(f.session_id)} • ${ts}</div></div>`;
+      });
+      container.innerHTML = rows.join('');
+    }
+
+    // send CSV report for current session to teacher email via mailto: (opens mail client)
+    function sendReport(){
+      if(!currentSession){ showToast('Алдымен сессия құрыңыз', true); return; }
+      const to = encodeURIComponent(currentSession.teacher_email || '');
+      const subject = encodeURIComponent('Пікірлер есепі — ' + (currentSession.topic || 'Сессия'));
+      const rows = [['session_id','student_name','feedback','animal_type','timestamp']];
+      const feedbacks = allData.filter(i => !i.is_session && i.session_id === currentSession.session_id);
+      feedbacks.forEach(f => rows.push([f.session_id, f.student_name, f.feedback.replace(/\n/g,' '), f.animal_type, f.timestamp]));
+      const csv = rows.map(r => r.map(cell => '"' + (String(cell||'').replace(/"/g,'""')) + '"').join(',')).join('\n');
+      const body = encodeURIComponent('CSV attached below (copy to a file if needed):\n\n' + csv);
+      const mailto = `mailto:${to}?subject=${subject}&body=${body}`;
+      // open mail client
+      window.location.href = mailto;
+    }
+
+    // Try to detect local LAN IP using WebRTC (may work in many browsers)
+    function detectAndFillLocalUrl(){
+      const field = document.getElementById('base-url');
+      field.value = 'Авто анықталуда...';
+      // WebRTC approach
+      const pc = new RTCPeerConnection({iceServers:[]});
+      const ips = new Set();
+      function handleCandidate(candidate){
+        const parts = candidate.split(' ');
+        for(const p of parts){
+          // IPv4
+          if(/^(?:\d{1,3}\.){3}\d{1,3}$/.test(p)) ips.add(p);
+        }
+      }
+      pc.createDataChannel('');
+      pc.createOffer().then(offer => pc.setLocalDescription(offer)).catch(()=>{});
+      pc.onicecandidate = (e) => {
+        if(!e.candidate) return;
+        handleCandidate(e.candidate.candidate);
+        // when ICE is finished
+        if(e.candidate && e.candidate.candidate.indexOf('srflx')>-1) {
+          // don't wait
+        }
+        // if we found IPs
+        if(ips.size>0){
+          const ip = [...ips][0];
+          field.value = (location.protocol + '//' + ip + (location.port?(':'+location.port):''));
+          pc.close();
+        }
+      };
+      // timeout fallback
+      setTimeout(()=>{
+        if(ips.size===0){ field.value = ''; alert('Автоматты анықтау мүмкін емес. Сіз қолмен локал IP енгізуіңіз керек (мысалы http://192.168.1.5:8000)'); pc.close(); }
+      }, 2500);
+    }
+
+    // call renderAllFeedbacks on global updates
+    const originalDataHandler_onDataChanged = dataHandler.onDataChanged;
+    dataHandler.onDataChanged = function(d){ originalDataHandler_onDataChanged(d); renderAllFeedbacks(); };
+    function createFeedbackCard(feedback) { const card = document.createElement('div'); card.className = 'feedback-card'; card.dataset.feedbackId = feedback.__backendId || feedback.timestamp; const animal = animals.find(a => a.type === feedback.animal_type) || animals[0]; const animalSVG = getAnimalSVG(animal.type, animal.color); const date = new Date(feedback.timestamp); const timeStr = date.toLocaleTimeString('kk-KZ', { hour: '2-digit', minute: '2-digit' }); card.innerHTML = `<div class="animal-avatar">${animalSVG}</div><div class="student-name">${escapeHtml(feedback.student_name)}</div><div class="feedback-text">${escapeHtml(feedback.feedback)}</div><div class="timestamp">⏰ ${timeStr}</div>`; return card; }
+    function getAnimalSVG(type, color) { const svgs = { cat: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="35" fill="${color}"/></svg>`, dog: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="55" r="30" fill="${color}"/></svg>`, fox: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><polygon points="50,20 30,50 70,50" fill="${color}"/></svg>`, bear: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="55" r="30" fill="${color}"/></svg>`, rabbit: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="60" r="28" fill="${color}"/></svg>`, owl: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><ellipse cx="50" cy="55" rx="32" ry="35" fill="${color}"/></svg>`, panda: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="55" r="30" fill="#fff"/></svg>`, koala: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="58" r="28" fill="${color}"/></svg>` }; return svgs[type] || svgs.cat; }
+    function showToast(message, isError = false) { const existingToast = document.querySelector('.toast'); if (existingToast) existingToast.remove(); const toast = document.createElement('div'); toast.className = 'toast' + (isError ? ' error' : ''); toast.textContent = message; document.body.appendChild(toast); setTimeout(() => toast.remove(), 3000); }
+    function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
+    if (window.elementSdk && window.elementSdk.registerOnConfigChange) window.elementSdk.registerOnConfigChange((cfg) => { /* optional */ });
+    init();
+  </script>
+  <!-- QR кітапхана (CDN) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <!-- QR генерация коды: создаёт QR для текущего URL в контейнере #qrcode -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const qrContainer = document.getElementById('qrcode');
+      if (!qrContainer) return;
+
+      // Используем текущий URL страницы (можно заменить на любую другую ссылку)
+      const urlForStudents = window.location.href;
+
+      try {
+        new QRCode(qrContainer, {
+          text: urlForStudents,
+          width: 200,
+          height: 200,
+          colorDark: '#667eea',
+          colorLight: '#ffffff'
+        });
+      } catch (e) {
+        console.warn('QR generation failed:', e);
+      }
+    });
+    
+    // regenerate simple QR in #qrcode for a given url (used to sync with session link)
+    function updateSimpleQRCode(url){
+      const qrContainer = document.getElementById('qrcode');
+      if(!qrContainer) return;
+      qrContainer.innerHTML = '';
+      if(window.QRCode){
+        try{ new QRCode(qrContainer, { text: url, width: 200, height: 200, colorDark: '#667eea', colorLight: '#ffffff' }); }catch(e){ console.warn(e); }
+      } else {
+        // library not loaded yet — try again shortly
+        setTimeout(()=> updateSimpleQRCode(url), 300);
+      }
+    }
+  </script>
+ </body>
+</html>
